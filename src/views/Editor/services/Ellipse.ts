@@ -5,7 +5,7 @@ import { Vector2d } from 'konva/types/types';
 export const ELLIPSE_CONFIG_DEFAULT = {
   stroke: 'blue',
   strokeWidth: 1,
-  draggable: true,
+  draggable: false,
   radiusX: 0,
   radiusY: 0
 }
