@@ -1,5 +1,7 @@
-canvas, #konva-stage {
+#konva-stage {
     border: black solid 1px !important;
+    width: 700px;
+    height: 600px;
 }
 
 .container {
