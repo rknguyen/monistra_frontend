@@ -2,25 +2,28 @@ import Konva from "konva";
 import { KonvaEventObject } from 'konva/types/Node';
 import { Vector2d } from 'konva/types/types';
 
-export const RECT_CONFIG_DEFAULT = {
+export const ELLIPSE_CONFIG_DEFAULT = {
   stroke: 'blue',
   strokeWidth: 1,
-  draggable: false
+  draggable: true,
+  radiusX: 0,
+  radiusY: 0
 }
 
-export interface RectangleConstructor {
+export interface EllipseConstructor {
   useTranformer: Function,
   useIsDrawingMode: Function
 }
 
-export class RectangleService {
-  private rect?: Konva.Rect
+export class EllipseService {
+  private ellip?: Konva.Ellipse
   private useTranformer: Function
   private useIsDrawingMode: Function
+  private startingPoint?: Vector2d
 
   public isDestroyed = false
 
-  constructor({ useTranformer, useIsDrawingMode }: RectangleConstructor) {
+  constructor({ useTranformer, useIsDrawingMode }: EllipseConstructor) {
     this.useTranformer = useTranformer
     this.useIsDrawingMode = useIsDrawingMode
   }
@@ -28,19 +31,19 @@ export class RectangleService {
   private activeTransformer() {
     this.useTranformer((transformer: Konva.Transformer) => {
       transformer.detach()
-      transformer.nodes([this.rect as Konva.Rect])
+      transformer.nodes([this.ellip as Konva.Ellipse])
     })
   }
 
-  private initEvent() {
-    this.rect?.on('click', (event: KonvaEventObject<MouseEvent>) => {
+  private initEvent(layer: Konva.Layer) {
+    this.ellip?.on('click', (event: KonvaEventObject<MouseEvent>) => {
       this.useIsDrawingMode((isDrawing: boolean) => {
         if (!isDrawing) {
           this.activeTransformer()
         }
       })
     })
-    this.rect?.on('mousedown', (event: KonvaEventObject<MouseEvent>) => {
+    this.ellip?.on('mousedown', (event: KonvaEventObject<MouseEvent>) => {
       this.useIsDrawingMode((isDrawing: boolean) => {
         if (!isDrawing) {
           this.activeTransformer()
@@ -50,43 +53,49 @@ export class RectangleService {
   }
 
   private addToLayer(stage: Konva.Stage, layer: Konva.Layer) {
-    layer.add(this.rect as Konva.Rect)
+    layer.add(this.ellip as Konva.Ellipse)
     stage.add(layer)
     layer.draw()
   }
 
   public stopDraggable() {
-    this.rect?.draggable(false)
+    this.ellip?.draggable(false)
   }
 
   public resumeDraggable() {
-    this.rect?.draggable(true)
+    this.ellip?.draggable(true)
   }
 
   public onMouseDown(stage: Konva.Stage, layer: Konva.Layer, event: KonvaEventObject<MouseEvent>) {
     const cursor = stage.getPointerPosition()
-    const rectOptions = Object.assign(RECT_CONFIG_DEFAULT, {
+    this.startingPoint = cursor as Vector2d
+    const ellipOptions = Object.assign(ELLIPSE_CONFIG_DEFAULT, {
       x: cursor?.x,
       y: cursor?.y
     })
-
-    this.rect = new Konva.Rect(rectOptions)
+    this.ellip = new Konva.Ellipse(ellipOptions)
     this.addToLayer(stage, layer)
-    this.initEvent()
+    this.initEvent(layer)
   }
 
   public onMouseMove(stage: Konva.Stage, layer: Konva.Layer, event: KonvaEventObject<MouseEvent>) {
     const cursor = stage?.getPointerPosition() as Vector2d
-    this.rect
-      ?.width(cursor.x - this.rect.x())
-      .height(cursor.y - this.rect.y())
+    const x = this.startingPoint?.x || 0
+    const y = this.startingPoint?.y || 0
+    const radiusX = (cursor.x - x) / 2
+    const radiusY = (cursor.y - y) / 2
+    this.ellip
+      ?.x(x + radiusX)
+      .y(y + radiusY)
+      .radiusX(radiusX)
+      .radiusY(radiusY)
     layer.draw()
   }
 
   public onMouseUp(stage: Konva.Stage, layer: Konva.Layer, event: KonvaEventObject<MouseEvent>) {
-    if (this.rect?.height() === 0 && this.rect?.width() === 0) {
+    if (this.ellip?.radiusX() === 0 && this.ellip?.radiusY() === 0) {
       this.isDestroyed = true
-      this.rect?.destroy()
+      this.ellip?.destroy()
       layer.draw()
     }
   }

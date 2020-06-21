@@ -1,26 +1,11 @@
 <template>
   <div class="container">
     <div class="tools">
-      <button
-        :class="{ active: isModeActive(NORMAL) }"
-        @click="changeMode(NORMAL)"
-      >
-        Normal
-      </button>
-      <button
-        :class="{ active: isModeActive(RECTANGLE) }"
-        @click="changeMode(RECTANGLE)"
-      >
-        Rectangle
-      </button>
-      <button
-        :class="{ active: isModeActive(ELLIPSE) }"
-        @click="changeMode(ELLIPSE)"
-      >
-        Ellipse
-      </button>
+      <button :class="{ active: editorMode === 0 }" @click="editorMode = 0">Select</button>
+      <button :class="{ active: editorMode === 1 }" @click="editorMode = 1">Rectangle</button>
+      <button :class="{ active: editorMode === 2 }" @click="editorMode = 2">Ellipse</button>
     </div>
-    <canvas id="editor" height="600" width="700"></canvas>
+    <div id="konva-stage"></div>
   </div>
 </template>
 

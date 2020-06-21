@@ -1,118 +1,124 @@
-const DEFAULT_CANVAS_RATIO = 0.8
+import { Component, Vue, Watch } from 'vue-property-decorator'
 
-const NORMAL_NODE = 'normal'
-const ELLIPSE_MODE = 'ellipse'
-const RECTANGLE_MODE = 'rectangle'
+import Konva from 'konva'
+import { KonvaEventObject } from 'konva/types/Node'
+import { RectangleService } from './services/Rectangle'
+import { Layer } from 'konva/types/Layer'
+import { Stage } from 'konva/types/Stage'
+import { EllipseService } from './services/Ellipse'
 
-import { Component, Vue } from 'vue-property-decorator'
+enum Mode {
+  Select = 0,
+  DrawRectangle = 1,
+  DrawEllipse = 2
+}
 
-import { fabric } from 'fabric'
-import { Rectangle } from './services/rectangle'
-import { Ellipse } from './services/circle'
+type Service = RectangleService | EllipseService
 
 @Component
 export default class Editor extends Vue {
-  private canvas: any = null
-  private objectList: any[] = []
+  private stage?: Konva.Stage
+  private layer?: Konva.Layer
 
-  private isMouseDown = false
+  private isDrawing = false
+  private transformer = new Konva.Transformer()
+  private Services: Service[] = []
 
-  public NORMAL = NORMAL_NODE
-  public ELLIPSE = ELLIPSE_MODE
-  public RECTANGLE = RECTANGLE_MODE
+  public editorMode = Mode.Select
 
-  private currentMode = NORMAL_NODE
-
-  public canvasSize = {
-    width: 0,
-    height: 0
+  get topService() {
+    return this.Services[this.Services.length - 1]
   }
 
-  public mouse = {
-    x: 0,
-    y: 0,
-    startX: 0,
-    startY: 0
+  private initKonva() {
+    this.stage = new Konva.Stage({
+      container: 'konva-stage',
+      width: 700,
+      height: 600
+    })
+    this.layer = new Konva.Layer()
+    this.layer.add(this.transformer)
   }
 
-  public element: HTMLElement | null = null
+  public useTransformer(func: Function) {
+    func(this.transformer)
+    this.layer?.draw()
+  }
 
-  private stabiliseCanvasSize() {
-    this.$nextTick(() => {
-      const { innerWidth, innerHeight } = window
-      this.canvasSize.width = innerWidth * DEFAULT_CANVAS_RATIO
-      this.canvasSize.height = innerHeight * DEFAULT_CANVAS_RATIO
+  public useIsDrawingMode(func: Function) {
+    func(this.isDrawingMode(this.editorMode))
+  }
+
+  private isDrawingMode(mode: number): boolean {
+    return Mode.DrawRectangle <= mode && mode <= Mode.DrawEllipse
+  }
+
+  private isSelectionMode(mode: number): boolean {
+    return mode === Mode.Select
+  }
+
+  private detachTransformer() {
+    this.transformer.detach()
+    this.layer?.draw()
+  }
+
+  private initEvent() {
+    this.stage?.on('mousedown', (event: KonvaEventObject<MouseEvent>) => {
+      if (this.isDrawingMode(this.editorMode)) {
+        this.isDrawing = true
+        switch (this.editorMode) {
+          case Mode.DrawRectangle:
+            this.Services.push(new RectangleService({ useTranformer: this.useTransformer, useIsDrawingMode: this.useIsDrawingMode }))
+            break
+          case Mode.DrawEllipse:
+            this.Services.push(new EllipseService({ useTranformer: this.useTransformer, useIsDrawingMode: this.useIsDrawingMode }))
+            break
+          default:
+            break
+        }
+        this.topService.onMouseDown(this.stage as Stage, this.layer as Layer, event)
+      } else
+        if (this.isSelectionMode(this.editorMode)) {
+          if (event.target === this.stage) {
+            this.detachTransformer()
+          }
+        }
+    })
+    this.stage?.on('mousemove', (event: KonvaEventObject<MouseEvent>) => {
+      if (this.isDrawingMode(this.editorMode) && this.isDrawing) {
+        this.topService.onMouseMove(this.stage as Stage, this.layer as Layer, event)
+      }
+    })
+    this.stage?.on('mouseup', (event: KonvaEventObject<MouseEvent>) => {
+      if (this.isDrawingMode(this.editorMode) && this.isDrawing) {
+        this.isDrawing = false
+        this.topService.onMouseUp(this.stage as Stage, this.layer as Layer, event)
+        if (this.topService.isDestroyed) {
+          this.Services.pop()
+        }
+      }
     })
   }
 
-  private initializeCanvas() {
-    this.canvas = new fabric.Canvas('editor')
-    this.initializeCanvasEvent()
-  }
-
-  private initializeCanvasEvent() {
-    if (this.canvas !== null) {
-      this.canvas.on('mouse:down', this.onMouseDownCanvas)
-      this.canvas.on('mouse:move', this.onMouseMoveCanvas)
-      this.canvas.on('mouse:up', this.onMouseUpCanvas)
-    }
-  }
-
-  private onMouseDownCanvas(event: any) {
-    if (this.currentMode !== NORMAL_NODE) {
-      console.log('created')
-      const { x: left, y: top } = this.canvas.getPointer(event.e)
-      this.isMouseDown = true
-
-      let newObject = null
-      switch (this.currentMode) {
-        case RECTANGLE_MODE:
-          newObject = new Rectangle({ top, left })
-          break
-        case ELLIPSE_MODE:
-          newObject = new Ellipse({ top, left })
-          break
-        default:
-          break
+  @Watch('editorMode')
+  onEditorModeChanged(value: number, oldValue: number) {
+    if (this.isSelectionMode(value) && this.isDrawingMode(oldValue)) {
+      this.Services.forEach((service) => {
+        service.resumeDraggable()
+      })
+    } else
+      if (this.isDrawingMode(value) && this.isSelectionMode(oldValue)) {
+        this.detachTransformer()
+        this.Services.forEach((service) => {
+          service.stopDraggable()
+        })
       }
-
-      if (newObject !== null) {
-        this.objectList.push(newObject)
-        this.canvas.add(newObject.getInstance())
-      }
-    }
-  }
-
-  private onMouseMoveCanvas(event: any) {
-    if (this.isMouseDown) {
-      const { x: left, y: top } = this.canvas.getPointer(event.e)
-      const object = this.objectList[this.objectList.length - 1]
-      object.update({ top, left })
-      this.canvas.renderAll()
-    }
-  }
-
-  private onMouseUpCanvas(obj: any) {
-    if (this.isMouseDown) {
-      this.isMouseDown = false
-      this.canvas.renderAll()
-    }
-  }
-
-  public changeMode(mode: string) {
-    this.currentMode = mode
-  }
-
-  public isModeActive(mode: string) {
-    return this.currentMode === mode
   }
 
   public created() {
-    window.addEventListener('resize', this.stabiliseCanvasSize)
-  }
-
-  public mounted() {
-    this.stabiliseCanvasSize()
-    this.initializeCanvas()
+    this.$nextTick(() => {
+      this.initKonva()
+      this.initEvent()
+    })
   }
 }

@@ -1,5 +1,5 @@
-#editor {
-    border: black solid 1px;
+canvas, #konva-stage {
+    border: black solid 1px !important;
 }
 
 .container {

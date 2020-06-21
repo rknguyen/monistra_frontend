@@ -1,5 +1,5 @@
 <template>
   <div>
-    <h1>Raberu</h1>
+    <h1>Monistra</h1>
   </div>
 </template>
