@@ -162,6 +162,7 @@ export default class Editor extends Vue {
                 this.isDrawingPolygon = false
                 this.points = []
                 event.evt.preventDefault()
+                point.scale({ x: 1, y: 1 })
                 this.isFinishPolygon = true
               }
             })
