@@ -160,9 +160,9 @@ export default class Editor extends Vue {
             point.on('click', (event: KonvaEventObject<MouseEvent>) => {
               if (this.points.length >= 3) {
                 this.isDrawingPolygon = false
+                this.points[0].scale({ x: 1, y: 1 })
                 this.points = []
                 event.evt.preventDefault()
-                point.scale({ x: 1, y: 1 })
                 this.isFinishPolygon = true
               }
             })
