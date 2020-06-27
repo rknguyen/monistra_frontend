@@ -159,10 +159,21 @@ export default class Editor extends Vue {
             })
             point.on('click', (event: KonvaEventObject<MouseEvent>) => {
               if (this.points.length >= 3) {
-                this.isDrawingPolygon = false
-                this.points[0].scale({ x: 1, y: 1 })
-                this.points = []
                 event.evt.preventDefault()
+                this.isDrawingPolygon = false
+
+                this.lines[this.lines.length - 1].destroy()
+                const line = new Konva.Line({ points: [this.points[this.points.length - 1].x(), this.points[this.points.length - 1].y(), this.points[0].x(), this.points[0].y()], stroke: 'black', strokeWidth: 5 })
+                group.add(line)
+                this.lines.push(line)
+                this.layer?.add(group)
+                this.stage?.add(this.layer)
+
+                this.points[0].setZIndex(line.zIndex())
+                this.points[0].scale({ x: 1, y: 1 })
+                this.layer?.draw()
+                this.points = []
+
                 this.isFinishPolygon = true
               }
             })
