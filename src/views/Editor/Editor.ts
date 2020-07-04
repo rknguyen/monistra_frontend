@@ -31,7 +31,7 @@ export default class Editor extends Vue {
 
   private isDrawingPolygon = false
   private lines: Konva.Line[] = []
-  private points: Konva.Rect[] = []
+  private points: Konva.Circle[] = []
   private groups: Konva.Group[] = []
   private isFinishPolygon = false
 
@@ -144,8 +144,8 @@ export default class Editor extends Vue {
           this.isFinishPolygon = false;
         } else {
           const group = this.groups[this.groups.length - 1]
-          const popts = { x: cursor.x - 3, y: cursor.y - 3, width: 4, height: 4, stroke: 'black', fill: 'black' }
-          this.points.push(new Konva.Rect(popts))
+          const popts = { x: cursor.x, y: cursor.y, radius: 3, stroke: 'white', fill: '#1dfa11' }
+          this.points.push(new Konva.Circle(popts))
           const point = this.points[this.points.length - 1]
           group.add(point)
           if (isStartingPoint) {
