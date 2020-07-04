@@ -39,14 +39,14 @@ export class EllipseService {
     this.ellip?.on('click', (event: KonvaEventObject<MouseEvent>) => {
       this.useIsDrawingMode((isDrawing: boolean) => {
         if (!isDrawing) {
-          this.activeTransformer()
+          // this.activeTransformer()
         }
       })
     })
     this.ellip?.on('mousedown', (event: KonvaEventObject<MouseEvent>) => {
       this.useIsDrawingMode((isDrawing: boolean) => {
         if (!isDrawing) {
-          this.activeTransformer()
+          // this.activeTransformer()
         }
       })
     })

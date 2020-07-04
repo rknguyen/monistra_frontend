@@ -223,9 +223,9 @@ export default class Editor extends Vue {
   @Watch('editorMode')
   onEditorModeChanged(value: number, oldValue: number) {
     if (this.isSelectionMode(value) && this.isDrawingMode(oldValue)) {
-      this.Services.forEach((service) => {
-        service.resumeDraggable()
-      })
+      // this.Services.forEach((service) => {
+      //   service.resumeDraggable()
+      // })
     } else
       if (this.isDrawingMode(value) && this.isSelectionMode(oldValue)) {
         this.detachTransformer()

@@ -36,14 +36,14 @@ export class RectangleService {
     this.rect?.on('click', (event: KonvaEventObject<MouseEvent>) => {
       this.useIsDrawingMode((isDrawing: boolean) => {
         if (!isDrawing) {
-          this.activeTransformer()
+          // this.activeTransformer()
         }
       })
     })
     this.rect?.on('mousedown', (event: KonvaEventObject<MouseEvent>) => {
       this.useIsDrawingMode((isDrawing: boolean) => {
         if (!isDrawing) {
-          this.activeTransformer()
+          // this.activeTransformer()
         }
       })
     })
