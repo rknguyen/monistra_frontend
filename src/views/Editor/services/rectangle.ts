@@ -3,8 +3,8 @@ import { KonvaEventObject } from 'konva/types/Node';
 import { Vector2d } from 'konva/types/types';
 
 export const RECT_CONFIG_DEFAULT = {
-  stroke: 'blue',
-  strokeWidth: 1,
+  stroke: 'red',
+  strokeWidth: 3,
   draggable: false
 }
 

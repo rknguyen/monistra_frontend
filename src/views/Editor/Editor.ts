@@ -26,6 +26,7 @@ export default class Editor extends Vue {
   private transformer = new Konva.Transformer()
   private Services: Service[] = []
 
+  public uploadImage = true
   public editorMode = Mode.Select
 
   private isDrawingPolygon = false
@@ -42,7 +43,7 @@ export default class Editor extends Vue {
     this.stage = new Konva.Stage({
       container: 'konva-stage',
       width: 700,
-      height: 600
+      height: 700
     })
     this.layer = new Konva.Layer()
     this.layer.add(this.transformer)
@@ -143,7 +144,7 @@ export default class Editor extends Vue {
           this.isFinishPolygon = false;
         } else {
           const group = this.groups[this.groups.length - 1]
-          const popts = { x: cursor.x - 3, y: cursor.y - 3, width: 6, height: 6, stroke: 'red', fill: 'red' }
+          const popts = { x: cursor.x - 3, y: cursor.y - 3, width: 4, height: 4, stroke: 'black', fill: 'black' }
           this.points.push(new Konva.Rect(popts))
           const point = this.points[this.points.length - 1]
           group.add(point)
@@ -163,7 +164,7 @@ export default class Editor extends Vue {
                 this.isDrawingPolygon = false
 
                 this.lines[this.lines.length - 1].destroy()
-                const line = new Konva.Line({ points: [this.points[this.points.length - 1].x(), this.points[this.points.length - 1].y(), this.points[0].x(), this.points[0].y()], stroke: 'black', strokeWidth: 5 })
+                const line = new Konva.Line({ points: [this.points[this.points.length - 1].x(), this.points[this.points.length - 1].y(), this.points[0].x(), this.points[0].y()], stroke: 'red', strokeWidth: 3 })
                 group.add(line)
                 this.lines.push(line)
                 this.layer?.add(group)
@@ -178,7 +179,7 @@ export default class Editor extends Vue {
               }
             })
           }
-          const line = new Konva.Line({ points: [cursor.x, cursor.y, cursor.x, cursor.y], stroke: 'black', strokeWidth: 5 })
+          const line = new Konva.Line({ points: [cursor.x, cursor.y, cursor.x, cursor.y], stroke: 'red', strokeWidth: 3 })
           group.add(line)
           this.lines.push(line)
           this.layer?.add(group)
@@ -187,6 +188,36 @@ export default class Editor extends Vue {
         }
       }
     })
+  }
+
+  public onUploadImage(event: any) {
+    const URL = window.webkitURL || window.URL
+    const url = URL.createObjectURL(event.target.files[0])
+    const image = new Image()
+    image.src = url
+
+    image.onload = () => {
+      const width = image.width
+      const height = image.height
+
+      const max = 700
+      const ratio = (width > height ? width / max : height / max)
+
+      const konvaImage = new Konva.Image({
+        image: image,
+        x: max / 2 - width / (2 * ratio),
+        y: max / 2 - height / (2 * ratio),
+        width: width / ratio,
+        height: height / ratio
+      })
+
+      this.uploadImage = false
+      this.init(() => {
+        this.layer?.add(konvaImage)
+        this.stage?.add(this.layer)
+        this.layer?.draw()
+      })
+    }
   }
 
   @Watch('editorMode')
@@ -204,10 +235,11 @@ export default class Editor extends Vue {
       }
   }
 
-  public created() {
+  private init(fn: Function) {
     this.$nextTick(() => {
       this.initKonva()
       this.initEvent()
+      fn()
     })
   }
 }
