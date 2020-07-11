@@ -29,6 +29,17 @@ export default class Editor extends Vue {
   public uploadImage = true
   public editorMode = Mode.Select
 
+  public labelInput = ""
+  private backgroundRatio?: number
+  private backgroundKonva?: Konva.Image
+  private backgroundImage?: HTMLImageElement
+  public previewImage = {
+    url: '',
+    height: 0,
+    width: 0
+  }
+  public labeledImage: any[] = []
+
   private isDrawingPolygon = false
   private lines: Konva.Line[] = []
   private points: Konva.Circle[] = []
@@ -36,7 +47,11 @@ export default class Editor extends Vue {
   private isFinishPolygon = false
 
   get topService() {
-    return this.Services[this.Services.length - 1]
+    if (this.Services.length > 0) {
+      return this.Services[this.Services.length - 1]
+    } else {
+      return null
+    }
   }
 
   private initKonva() {
@@ -74,6 +89,12 @@ export default class Editor extends Vue {
   private initEvent() {
     this.stage?.on('mousedown', (event: KonvaEventObject<MouseEvent>) => {
       if (this.isDrawingMode(this.editorMode)) {
+        // remove the top service if its status is still READY
+        if (this.topService?.status === 'READY') {
+          this.topService.getInstance()?.destroy()
+          this.layer?.draw()
+        }
+
         this.isDrawing = true
         switch (this.editorMode) {
           case Mode.DrawRectangle:
@@ -85,7 +106,7 @@ export default class Editor extends Vue {
           default:
             break
         }
-        this.topService.onMouseDown(this.stage as Stage, this.layer as Layer, event)
+        this.topService?.onMouseDown(this.stage as Stage, this.layer as Layer, event)
       } else
         if (this.isSelectionMode(this.editorMode)) {
           if (event.target === this.stage) {
@@ -95,7 +116,7 @@ export default class Editor extends Vue {
     })
     this.stage?.on('mousemove', (event: KonvaEventObject<MouseEvent>) => {
       if (this.isDrawingMode(this.editorMode) && this.isDrawing) {
-        this.topService.onMouseMove(this.stage as Stage, this.layer as Layer, event)
+        this.topService?.onMouseMove(this.stage as Stage, this.layer as Layer, event)
       }
       if (this.editorMode === Mode.DrawPolygon && this.isDrawingPolygon) {
         const cursor = (this.stage as Stage).getPointerPosition() as Vector2d
@@ -114,10 +135,22 @@ export default class Editor extends Vue {
     this.stage?.on('mouseup', (event: KonvaEventObject<MouseEvent>) => {
       if (this.isDrawingMode(this.editorMode) && this.isDrawing) {
         this.isDrawing = false
-        this.topService.onMouseUp(this.stage as Stage, this.layer as Layer, event)
-        if (this.topService.isDestroyed) {
+        this.topService?.onMouseUp(this.stage as Stage, this.layer as Layer, event)
+        if (this.topService?.isDestroyed) {
           this.Services.pop()
-        }
+        } else
+          if (this.topService instanceof RectangleService) {
+            const instance = this.topService.getInstance()
+            const ratio = this.backgroundRatio
+            if (ratio && instance && instance.x() && instance.y() && instance.width() && instance.height()) {
+              const [x, y] = this.getRelativePosition(instance.x(), instance.y())
+              const w = instance.width() * ratio
+              const h = instance.height() * ratio
+              this.previewImage.url = this.cropImage(this.backgroundImage, x, y, w, h)
+              this.previewImage.height = instance.height()
+              this.previewImage.width = instance.width()
+            }
+          }
       }
     })
     this.stage?.on('click', (event: KonvaEventObject<MouseEvent>) => {
@@ -216,8 +249,62 @@ export default class Editor extends Vue {
         this.layer?.add(konvaImage)
         this.stage?.add(this.layer)
         this.layer?.draw()
+        this.backgroundImage = image
+        this.backgroundRatio = ratio
+        this.backgroundKonva = konvaImage
       })
     }
+  }
+
+  private getRelativePosition(x: number, y: number): number[] {
+    const ratio = this.backgroundRatio
+    if (ratio !== undefined) {
+      const xBackground = this.backgroundKonva?.x()
+      const yBackground = this.backgroundKonva?.y()
+      const wBackground = this.backgroundKonva?.width()
+      const hBackground = this.backgroundKonva?.height()
+      if ((xBackground !== undefined)
+        && (yBackground !== undefined)
+        && (wBackground !== undefined)
+        && (hBackground !== undefined)) {
+        if (x < xBackground) x = xBackground
+        if (y < yBackground) y = yBackground
+        if (x > xBackground + wBackground) x = xBackground + wBackground
+        if (y > yBackground + hBackground) y = yBackground + hBackground
+        return [(x - xBackground) * ratio, (y - yBackground) * ratio]
+      }
+    }
+    return []
+  }
+
+  public cropImage(image: HTMLImageElement | undefined, x: number, y: number, width: number, height: number): string {
+    const canvas: HTMLCanvasElement = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+
+    const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d')
+    if (image !== undefined) {
+      ctx?.drawImage(image, x, y, width, height, 0, 0, width, height)
+      return canvas.toDataURL()
+    }
+    return ''
+  }
+
+  public addLabel(event: any) {
+    event.preventDefault()
+
+    // Set the top service status is DONE
+    // if not, it could be deleted 
+    if (this.topService?.status) {
+      this.topService.status = 'DONE'
+      this.topService.getInstance()?.stroke('green')
+      this.layer?.draw()
+    }
+
+    const image = Object.assign({ label: this.labelInput }, this.previewImage)
+    this.labeledImage.unshift(image)
+    this.previewImage.url = ''
+    this.labelInput = ''
   }
 
   @Watch('editorMode')

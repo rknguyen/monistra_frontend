@@ -33,3 +33,32 @@
     border: 1px solid #FF0000;
     position: absolute;
 }
+
+.flex-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.labeling-space {
+    margin: 10px;
+    padding: 10px;
+    border: #2c5aa5 solid 2px;
+}
+
+.preview-img {
+    max-width: 100%;
+    background-size: cover;
+    background-position: center;
+}
+
+.labeled-image-list {
+    padding: 10px;
+    height: 610px;
+    overflow: auto;
+}
+
+h2.heading {
+    background-color: yellow;
+    text-align: center;
+}

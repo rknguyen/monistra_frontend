@@ -18,11 +18,16 @@ export class RectangleService {
   private useTranformer: Function
   private useIsDrawingMode: Function
 
+  public status = 'READY'
   public isDestroyed = false
 
   constructor({ useTranformer, useIsDrawingMode }: RectangleConstructor) {
     this.useTranformer = useTranformer
     this.useIsDrawingMode = useIsDrawingMode
+  }
+
+  public getInstance(): Konva.Rect | undefined {
+    return this.rect
   }
 
   private activeTransformer() {

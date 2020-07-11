@@ -21,11 +21,16 @@ export class EllipseService {
   private useIsDrawingMode: Function
   private startingPoint?: Vector2d
 
+  public status = 'READY'
   public isDestroyed = false
 
   constructor({ useTranformer, useIsDrawingMode }: EllipseConstructor) {
     this.useTranformer = useTranformer
     this.useIsDrawingMode = useIsDrawingMode
+  }
+
+  public getInstance(): Konva.Ellipse | undefined {
+    return this.ellip
   }
 
   private activeTransformer() {
