@@ -1,5 +1,5 @@
 <template>
   <div>
-    <h1>Monistra</h1>
+    <h1>Monistra (WIP)</h1>
   </div>
 </template>
