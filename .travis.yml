@@ -3,6 +3,11 @@ language: node_js
 node_js:
   - 12.18.1
 
+cache: 
+  yarn: true
+  directories:
+    - dist
+
 before_script:
   - yarn
 
@@ -13,6 +18,7 @@ jobs:
         - yarn build
 
     - stage: deploy
+      script: skip
       deploy:
         local_dir: dist
         provider: pages
