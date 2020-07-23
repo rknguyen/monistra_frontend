@@ -19,7 +19,9 @@ jobs:
         - yarn build
 
     - stage: deploy
-      script: skip
+      script:
+        # use custom domain for github pages
+        - echo $CUSTOM_DOMAIN > dist/CNAME
       deploy:
         local_dir: dist
         provider: pages
