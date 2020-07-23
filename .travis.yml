@@ -3,6 +3,10 @@ language: node_js
 node_js:
   - 12.18.1
 
+root:
+  os: linux
+  dist: xenial
+
 before_script:
   - npm install
 
@@ -18,8 +22,6 @@ jobs:
       deploy:
         local_dir: dist
         provider: pages
-        skip_cleanup: true
-        keep_history: true
-        github_token: $GITHUB_TOKEN
+        token: $GITHUB_TOKEN
         on:
           branch: master
