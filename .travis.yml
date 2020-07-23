@@ -1,0 +1,25 @@
+language: node_js
+
+node_js:
+  - 12.18.1
+
+before_script:
+  - npm install
+
+jobs:
+  include:
+    - stage: build
+      script:
+        - npm run build
+        # - npm test
+
+    - stage: deploy
+      script: skip
+      deploy:
+        local_dir: dist
+        provider: pages
+        skip_cleanup: true
+        keep_history: true
+        github_token: $GITHUB_TOKEN
+        on:
+          branch: master
