@@ -6,13 +6,17 @@ node_js:
 before_script:
   - yarn
 
-script:
-  - yarn build
+jobs:
+  include:
+    - stage: build
+    script:
+      - yarn build
 
-deploy:
-  local_dir: dist
-  provider: pages
-  skip_cleanup: true
-  token: $GITHUB_TOKEN
-  on:
-    branch: master
+    - stage: deploy
+    deploy:
+      local_dir: dist
+      provider: pages
+      skip_cleanup: true
+      token: $GITHUB_TOKEN
+      on:
+        branch: master
