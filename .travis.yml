@@ -2,16 +2,17 @@ language: node_js
 
 node_js:
   - 12.18.1
-  
+
 before_script:
-  - npm install
+  - yarn
 
 script:
-  - npm run build
+  - yarn build
 
 deploy:
   local_dir: dist
   provider: pages
+  keep_history: true
   token: $GITHUB_TOKEN
   on:
     branch: master
