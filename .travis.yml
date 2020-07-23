@@ -9,14 +9,14 @@ before_script:
 jobs:
   include:
     - stage: build
-    script:
-      - yarn build
+      script:
+        - yarn build
 
     - stage: deploy
-    deploy:
-      local_dir: dist
-      provider: pages
-      skip_cleanup: true
-      token: $GITHUB_TOKEN
-      on:
-        branch: master
+      deploy:
+        local_dir: dist
+        provider: pages
+        skip_cleanup: true
+        token: $GITHUB_TOKEN
+        on:
+          branch: master
