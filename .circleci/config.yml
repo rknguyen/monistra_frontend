@@ -31,6 +31,7 @@ jobs:
     executor: node_v12
     steps:
       - run: apk --no-cache add bash ca-certificates git openssh
+      - run: ssh-keyscan github.com >> ~/.ssh/known_hosts
       - attach_workspace:
           at: /app
       - run:
