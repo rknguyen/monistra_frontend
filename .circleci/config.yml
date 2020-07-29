@@ -8,7 +8,7 @@ executors:
   node_v12:
     docker:
       - image: node:12.18-alpine
-    working_directory: ~/app
+    working_directory: /app
 
 jobs:
   build:
@@ -21,15 +21,21 @@ jobs:
       - run:
           name: Build
           command: yarn build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist
 
   deploy_ghpages:
     executor: node_v12
     steps:
+      - attach_workspace:
+          at: /app/dist
       - run:
           name: Install custom domain
-          command: echo "monistra.clgt.io" > dist/CNAME
+          command: echo "monistra.clgt.io" > CNAME
       - gh-pages/deploy:
-          build-dir: dist
+          build-dir: .
 
 workflows:
   version: 2.0
