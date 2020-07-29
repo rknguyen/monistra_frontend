@@ -51,6 +51,7 @@ workflows:
           filters:
             branches:
               only: master
+
       - deploy_ghpages:
           requires:
             - build
