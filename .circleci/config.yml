@@ -25,19 +25,19 @@ jobs:
       - persist_to_workspace:
           root: .
           paths:
-            - dist
+            - .
 
   deploy_ghpages:
     executor: node_v12
     steps:
       - run: apk --no-cache add git
       - attach_workspace:
-          at: /app/dist
+          at: /app
       - run:
           name: Install custom domain
-          command: echo "monistra.clgt.io" > CNAME
+          command: echo "monistra.clgt.io" > dist/CNAME
       - gh-pages/deploy:
-          build-dir: .
+          build-dir: dist
 
 workflows:
   version: 2.0
