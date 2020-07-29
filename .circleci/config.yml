@@ -15,9 +15,10 @@ jobs:
     executor: node_v12
     steps:
       - checkout
-      - run: cd /app
       - node/install-packages:
+          app-dir: /app
           pkg-manager: yarn
+          version: 12.18.0
       - run:
           name: Build
           command: yarn build
