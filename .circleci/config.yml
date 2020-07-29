@@ -1,0 +1,40 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@1.1.6
+  gh-pages: sugarshin/gh-pages@0.0.6
+
+jobs:
+  build:
+    filters:
+      branches:
+        only: master
+
+    executor:
+      name: node/default
+    steps:
+      - checkout
+      - node/with-cache:
+          steps:
+            - run:
+              name: Install dependencies
+              command: yarn install
+            - run:
+              name: Build
+              command: yarn build
+
+  deploy_ghpages:
+    requires:
+      - build
+    steps:
+      - run:
+        name: Install custom domain
+        command: echo "monistra.clgt.io" > dist/CNAME
+      - gh-pages/deploy:
+        build-dir: dist
+
+workflows:
+  build-and-deploy:
+    jobs:
+      - build
+      - deploy_ghpages
