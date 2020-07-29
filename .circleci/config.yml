@@ -18,6 +18,7 @@ jobs:
       - node/install-packages:
           app-dir: /app
           pkg-manager: yarn
+          cache-key: yarn.lock
       - run:
           name: Build
           command: yarn build
@@ -29,6 +30,7 @@ jobs:
   deploy_ghpages:
     executor: node_v12
     steps:
+      - run: apk --no-cache add git
       - attach_workspace:
           at: /app/dist
       - run:
