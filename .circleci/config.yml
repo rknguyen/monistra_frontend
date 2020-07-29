@@ -28,9 +28,8 @@ jobs:
             - .
 
   deploy_ghpages:
-    executor: node_v12
+    machine: true
     steps:
-      - run: apk --no-cache add git
       - attach_workspace:
           at: /app
       - run:
