@@ -4,12 +4,15 @@ orbs:
   node: circleci/node@2.0.3
   gh-pages: sugarshin/gh-pages@0.0.6
 
+executors:
+  node_v12:
+    docker:
+      - image: node:12.18-alpine
+    working_directory: ~/app
+
 jobs:
   build:
-    executor:
-      name: node/default
-      tag: '12.18.1'
-    working_directory: ~/app
+    executor: node_v12
     steps:
       - checkout
       - node/install-packages:
@@ -20,8 +23,7 @@ jobs:
           command: yarn build
 
   deploy_ghpages:
-    machine: true
-    working_directory: ~/app
+    executor: node_v12
     steps:
       - run:
           name: Install custom domain
