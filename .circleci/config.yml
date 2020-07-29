@@ -17,7 +17,6 @@ jobs:
       - checkout
       - node/install-packages:
           pkg-manager: yarn
-          cache-key: yarn.lock
       - run:
           name: Build
           command: yarn build
