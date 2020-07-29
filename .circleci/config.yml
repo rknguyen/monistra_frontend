@@ -9,6 +9,7 @@ jobs:
     executor:
       name: node/default
       tag: '12.18.1'
+    working_directory: ~/app
     steps:
       - checkout
       - node/install-packages:
@@ -19,9 +20,8 @@ jobs:
           command: yarn build
 
   deploy_ghpages:
-    executor:
-      name: node/default
-      tag: '12.18.1'
+    machine: true
+    working_directory: ~/app
     steps:
       - run:
           name: Install custom domain
