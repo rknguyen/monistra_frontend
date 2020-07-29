@@ -15,6 +15,7 @@ jobs:
     executor: node_v12
     steps:
       - checkout
+      - run: cd /app
       - node/install-packages:
           pkg-manager: yarn
       - run:
