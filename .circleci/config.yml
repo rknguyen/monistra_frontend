@@ -28,8 +28,9 @@ jobs:
             - .
 
   deploy_ghpages:
-    machine: true
+    executor: node_v12
     steps:
+      - run: apk --no-cache add bash ca-certificates git
       - attach_workspace:
           at: /app
       - run:
