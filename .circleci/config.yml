@@ -31,7 +31,6 @@ jobs:
     executor: node_v12
     steps:
       - run: apk --no-cache add bash ca-certificates git openssh
-      - run: ssh -o StrictHostKeyChecking=no "$user@$host"
       - attach_workspace:
           at: /app
       - run:
@@ -39,6 +38,7 @@ jobs:
           command: echo "monistra.clgt.io" > dist/CNAME
       - gh-pages/deploy:
           build-dir: dist
+          ssh-fingerprints: $FINGERPRINTS
 
 workflows:
   version: 2.0
