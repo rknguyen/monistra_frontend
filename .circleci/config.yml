@@ -43,6 +43,7 @@ jobs:
             npm install -g --silent gh-pages@2.0.1
             git config user.email "bot@github.com"
             git config user.name "Circle CI"
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
       - run:
           name: Install custom domain
           command: echo "monistra.clgt.io" > dist/CNAME
