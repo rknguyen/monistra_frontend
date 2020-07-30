@@ -49,7 +49,7 @@ jobs:
           command: echo "monistra.clgt.io" > dist/CNAME
       - run:
           name: Deploy docs to gh-pages branch
-          command: gh-pages --message "[$CIRCLE_WORKFLOW_ID] Deploy $CIRCLE_USERNAME/$CIRCLE_PROJECT_REPONAME#$CIRCLE_SHA1" --dist dist
+          command: gh-pages --message "Deploy $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME#CIRCLE_BUILD_NUM" --dist dist
 
 workflows:
   version: 2.0
