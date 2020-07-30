@@ -30,21 +30,18 @@ jobs:
   deploy_ghpages:
     executor: node_v12
     steps:
-      - run: apk --no-cache add bash ca-certificates git openssh
-      - run: mkdir /root/.ssh
-      - run: chmod 0700 /root/.ssh
-      - run: ssh-keyscan github.com >> ~/.ssh/known_hosts
+      - run:
+        name: Install and configure depedencies
+        command: |
+          apk --no-cache add bash ca-certificates git openssh
+          npm install -g --silent gh-pages@2.0.1
+          git config user.email "nmhuy12@gmail.com"
+          git config user.name "rknguyen"
       - attach_workspace:
           at: /app
       - run:
           name: Install custom domain
           command: echo "monistra.clgt.io" > dist/CNAME
-      - run:
-          name: Install and configure depedencies
-          command: |
-            npm install -g --silent gh-pages@2.0.1
-            git config user.email "nmhuy12@gmail.com"
-            git config user.name "rknguyen"
       - add_ssh_keys:
           fingerprints:
             - 8c:2b:f2:75:3a:cd:bc:95:d5:f6:77:4b:4b:52:6a:a1
