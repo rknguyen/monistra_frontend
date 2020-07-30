@@ -49,8 +49,8 @@ jobs:
           fingerprints:
             - 8c:2b:f2:75:3a:cd:bc:95:d5:f6:77:4b:4b:52:6a:a1
       - run:
-        name: Deploy docs to gh-pages branch
-        command: gh-pages --message "Deploy $CIRCLE_BUILD_NUM" --dist dist
+          name: Deploy docs to gh-pages branch
+          command: gh-pages --message "Deploy $CIRCLE_BUILD_NUM" --dist dist
 
 workflows:
   version: 2.0
