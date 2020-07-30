@@ -48,8 +48,11 @@ jobs:
           name: Install custom domain
           command: echo "monistra.clgt.io" > dist/CNAME
       - run:
+          name: Copy .circleci
+          command: cp -R .circleci dist
+      - run:
           name: Deploy docs to gh-pages branch
-          command: gh-pages --message "Deploy $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME#CIRCLE_BUILD_NUM" --dist dist
+          command: gh-pages --dotfiles --message "Deploy $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME#$CIRCLE_BUILD_NUM" --dist dist
 
 workflows:
   version: 2.0
