@@ -30,6 +30,8 @@ jobs:
   deploy_ghpages:
     executor: node_v12
     steps:
+      - attach_workspace:
+          at: /app
       - run:
           name: Install and configure depedencies
           command: |
@@ -37,8 +39,6 @@ jobs:
             npm install -g --silent gh-pages@2.0.1
             git config user.email "nmhuy12@gmail.com"
             git config user.name "rknguyen"
-      - attach_workspace:
-          at: /app
       - run:
           name: Install custom domain
           command: echo "monistra.clgt.io" > dist/CNAME
