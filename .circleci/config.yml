@@ -35,21 +35,21 @@ jobs:
           at: /app
       - add_ssh_keys:
           fingerprints:
-            - "2c:02:cc:1d:99:1f:b9:f7:5a:b7:58:c9:e9:98:30:06"
+            - "80:66:8e:51:50:ae:d2:15:4c:2c:b4:2d:39:f8:f9:90"
       - run:
           name: Install and configure depedencies
           command: |
             apk --no-cache add bash ca-certificates git openssh
             npm install -g --silent gh-pages@2.0.1
-            git config user.email "bot@github.com"
-            git config user.name "Circle CI"
+            git config user.email "huy.nguyen@trustingsocial.com"
+            git config user.name "Huy Nguyen"
             ssh-keyscan github.com >> ~/.ssh/known_hosts
       - run:
           name: Install custom domain
           command: echo "monistra.clgt.io" > dist/CNAME
       - run:
           name: Deploy docs to gh-pages branch
-          command: gh-pages --message "Deploy $CIRCLE_BUILD_NUM" --dist dist
+          command: gh-pages --message "[$CIRCLE_WORKFLOW_ID] Deploy $CIRCLE_USERNAME/$CIRCLE_PROJECT_REPONAME#$CIRCLE_SHA1" --dist dist --history false
 
 workflows:
   version: 2.0
@@ -62,3 +62,6 @@ workflows:
       - deploy_ghpages:
           requires:
             - build
+          filters:
+            branches:
+              only: master
