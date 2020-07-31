@@ -2,7 +2,6 @@ version: 2.1
 
 orbs:
   node: circleci/node@2.0.3
-  gh-pages: sugarshin/gh-pages@0.0.6
 
 executors:
   node_v12:
@@ -10,49 +9,71 @@ executors:
       - image: node:12.18-alpine
     working_directory: /app
 
+defaults: &defaults
+  executor: node_v12
+
+step_install_deps: &install_deps
+  node/install-packages:
+    app-dir: /app
+    pkg-manager: yarn
+    cache-key: yarn.lock
+
+step_build_app: &build_app
+  run:
+    name: Build application
+    command: yarn build
+
+step_push_workspace: &save_folder
+  persist_to_workspace:
+    root: /app
+    paths:
+      - '*'
+
+step_pull_workspace: &checkout_workspace
+  attach_workspace:
+    at: /app
+
+step_install_ssh_key: &install_ssh_key
+  add_ssh_keys:
+    fingerprints:
+      - '80:66:8e:51:50:ae:d2:15:4c:2c:b4:2d:39:f8:f9:90'
+
+step_ensure_deploy_env: &ensure_deploy_env
+  run: |
+    apk --no-cache add bash ca-certificates git openssh
+    ssh-keyscan github.com >> ~/.ssh/known_hosts
+    git config user.name "Huy Nguyen"
+    git config user.email "huy.nguyen@trustingsocial.com"
+    npm install -g --silent gh-pages@2.0.1
+
+step_prepare_deploy: &prepare_deploy
+  run: |
+    echo "monistra.clgt.io" > dist/CNAME
+    cp -R .circleci dist
+
+step_deploy_ghpages: &deploy_ghpages
+  run:
+    name: Deploy docs to gh-pages branch
+    command: gh-pages --dotfiles --message "Deploy $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME#$CIRCLE_BUILD_NUM" --dist dist
+
 jobs:
   build:
-    executor: node_v12
+    <<: *defaults
     steps:
       - checkout
-      - node/install-packages:
-          app-dir: /app
-          pkg-manager: yarn
-          cache-key: yarn.lock
-      - run:
-          name: Build
-          command: yarn build
-      - persist_to_workspace:
-          root: /app
-          paths:
-            - '*'
+      - *install_deps
+      - *build_app
+      - *save_folder
 
   deploy_ghpages:
-    executor: node_v12
+    <<: *defaults
     steps:
       - checkout
-      - attach_workspace:
-          at: /app
-      - add_ssh_keys:
-          fingerprints:
-            - "80:66:8e:51:50:ae:d2:15:4c:2c:b4:2d:39:f8:f9:90"
-      - run:
-          name: Install and configure depedencies
-          command: |
-            apk --no-cache add bash ca-certificates git openssh
-            npm install -g --silent gh-pages@2.0.1
-            git config user.email "huy.nguyen@trustingsocial.com"
-            git config user.name "Huy Nguyen"
-            ssh-keyscan github.com >> ~/.ssh/known_hosts
-      - run:
-          name: Install custom domain
-          command: echo "monistra.clgt.io" > dist/CNAME
-      - run:
-          name: Copy .circleci
-          command: cp -R .circleci dist
-      - run:
-          name: Deploy docs to gh-pages branch
-          command: gh-pages --dotfiles --message "Deploy $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME#$CIRCLE_BUILD_NUM" --dist dist
+      - *checkout_workspace
+      - *install_ssh_key
+      - *ensure_deploy_env
+      - *prepare_deploy
+      - *deploy_ghpages
 
 workflows:
   version: 2.0
